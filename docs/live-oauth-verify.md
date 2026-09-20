@@ -7,7 +7,7 @@ Values come from `.env` (`EXPO_PUBLIC_WEBFLOW_CLIENT_ID`, `EXPO_PUBLIC_OAUTH_RED
 ## Prerequisites
 
 1. Token proxy live at `EXPO_PUBLIC_TOKEN_PROXY_URL` (client secret only in that host's environment)
-2. Redirect URI registered in the Webflow app dashboard, matching `EXPO_PUBLIC_OAUTH_REDIRECT_URI` (must match authorize + token exchange; an HTTPS callback should 302 to `mobileflow://oauth/callback`)
+2. Redirect URI registered in the Webflow app dashboard, matching `EXPO_PUBLIC_OAUTH_REDIRECT_URI`. Use the **www** host (for this project: `https://www.jeremycollins.net/mobileflow-callback`). Apex 308-redirects to www and in-app Safari reloads after Google login.
 3. App: from the repository root, run `npm install && npm start` (or a release/dev client build)
 4. Install a **development build or store build** on a physical phone. Expo Go cannot complete `mobileflow://` OAuth for this app.
 5. After authorizing in the system browser, the “Returning to Mobileflow…” page should open the app automatically; if not, tap **Return to Mobileflow app**.

@@ -80,7 +80,7 @@ Set:
 
 ```bash
 EXPO_PUBLIC_WEBFLOW_CLIENT_ID=your_public_client_id
-EXPO_PUBLIC_OAUTH_REDIRECT_URI=https://example.com/mobileflow-callback
+EXPO_PUBLIC_OAUTH_REDIRECT_URI=https://www.example.com/mobileflow-callback
 EXPO_PUBLIC_TOKEN_PROXY_URL=https://www.example.com/mobileflow-token
 ```
 
