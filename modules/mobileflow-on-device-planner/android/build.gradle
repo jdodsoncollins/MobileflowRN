@@ -1,0 +1,43 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+group = 'com.jcollins.mobileflow.ondevice'
+version = '0.1.0'
+
+def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+if (expoModulesCorePlugin.exists()) {
+  apply from: expoModulesCorePlugin
+  applyKotlinExpoModulesCorePlugin()
+}
+
+android {
+  namespace "com.jcollins.mobileflow.ondevice"
+  compileSdkVersion safeExtGet("compileSdkVersion", 35)
+
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+    targetSdkVersion safeExtGet("targetSdkVersion", 35)
+  }
+
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  implementation project(':expo-modules-core')
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+
+  // ML Kit GenAI Prompt API — Gemini Nano via AICore (beta; device-fragmented).
+  // Kotlin uses reflection so runtime works when AICore is present; pin/adjust
+  // the artifact version if Maven resolution changes:
+  // https://developers.google.com/ml-kit/genai/prompt/android
+  implementation("com.google.mlkit:genai-prompt:1.0.0-beta1") {
+    // Do not fail the whole app if a transitive conflict appears on older AGP.
+    exclude group: "com.google.android.gms", module: "play-services-basement"
+  }
+}
+
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}

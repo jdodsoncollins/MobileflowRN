@@ -1,0 +1,19 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "files": [
+      "android/**",
+      "ios/**",
+      "store/**",
+      "dist/**",
+      "dist-ios/**",
+      "dist-android/**",
+      "dist-web/**"
+    ]
+  },
+  "textComponents": [
+    "Label",
+    "NativeTabs.Trigger.Label"
+  ],
+  "rawTextWrapperComponents": ["PrimaryButton"]
+}

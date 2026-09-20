@@ -1,0 +1,13 @@
+{
+  "name": "mobileflow-on-device-planner",
+  "version": "0.1.0",
+  "description": "On-device Command planner: Apple Intelligence (iOS) + Gemini Nano / AICore (Android)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {},
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Doctor · Audit · Typecheck · Test · Prebuild · Export
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Expo Doctor
+        run: npm run doctor
+
+      - name: Dependency audit
+        run: npm run audit
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Verify uuid override with xcode parser
+        run: npm run check:uuid-xcode
+
+      - name: Prebuild iOS
+        env:
+          CI: "1"
+          EXPO_NO_TELEMETRY: "1"
+        run: npm run prebuild:ios:check
+
+      - name: Prebuild Android
+        env:
+          CI: "1"
+          EXPO_NO_TELEMETRY: "1"
+        run: npm run prebuild:check
+
+      - name: Export Android (Hermes bundle)
+        env:
+          CI: "1"
+          EXPO_NO_TELEMETRY: "1"
+        run: npm run export:android
+
+      - name: Export Web
+        env:
+          CI: "1"
+          EXPO_NO_TELEMETRY: "1"
+        run: npm run export:web
+
+      - name: Assert bundle artifacts
+        run: |
+          test -f dist-android/metadata.json
+          test -d dist-android/_expo
+          test -f dist-web/index.html
+          test -f dist-web/metadata.json
+          echo "Android artifacts:" && find dist-android -type f | head -20
+          echo "Web artifacts:" && find dist-web -type f | head -20
+
+      - name: Upload web export (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-web
+          path: dist-web
+          retention-days: 7
+
+      - name: Upload android export (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-android
+          path: dist-android
+          retention-days: 7

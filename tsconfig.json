@@ -1,0 +1,35 @@
+{
+  "extends": "expo/tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "ignoreDeprecations": "6.0",
+    "customConditions": ["react-native", "react-native-legacy-deep-imports"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@/domain/*": [
+        "src/domain/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/features/*": [
+        "src/features/*"
+      ],
+      "@/design-system/*": [
+        "src/design-system/*"
+      ],
+      "@/support/*": [
+        "src/support/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
+}

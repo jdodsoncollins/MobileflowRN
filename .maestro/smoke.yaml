@@ -1,0 +1,17 @@
+# Offline UI smoke — no OAuth secrets. Device: Expo Go or emulator with app loaded.
+appId: host.exp.Exponent
+---
+- launchApp
+# Expo Go hosts the project; when using a dev client use the real bundle id:
+# appId: com.jcollins.MobileflowRN
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 60000
+- assertVisible: "Home"
+- tapOn: "Content"
+- assertVisible: "Content"
+- tapOn: "Activity"
+- assertVisible: "Activity"
+- tapOn: "Advanced"
+- assertVisible: "Advanced"
+- assertVisible: "Designer Bridge"

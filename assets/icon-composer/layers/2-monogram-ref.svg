@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Mobileflow monogram — condensed geometric lowercase m -->
+  <!-- Prefer PNG layer 2-monogram.png for final; this SVG is a layout reference -->
+  <rect width="1024" height="1024" fill="none"/>
+  <text x="512" y="560" text-anchor="middle" font-family="Avenir Next Condensed, Avenir Next, Helvetica Neue, sans-serif"
+        font-weight="800" font-size="620" fill="#FFFFFF">m</text>
+</svg>
