@@ -1,11 +1,7 @@
-import { useEffect } from 'react';
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as SplashScreen from 'expo-splash-screen';
 import { AppProvider } from '../src/shell/AppContext';
 import { colors } from '../src/design-system/theme';
-
-void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 const theme = {
   ...DefaultTheme,
@@ -28,10 +24,6 @@ const sheet = {
 };
 
 export default function RootLayout() {
-  useEffect(() => {
-    void SplashScreen.hideAsync().catch(() => undefined);
-  }, []);
-
   return (
     <AppProvider>
       <ThemeProvider value={theme}>
