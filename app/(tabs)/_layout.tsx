@@ -8,7 +8,7 @@ export const unstable_settings = {
 const tint =
   Platform.OS === 'ios'
     ? DynamicColorIOS({ dark: 'white', light: 'black' })
-    : '#5B4CFF';
+    : '#1A5355';
 
 export default function TabsLayout() {
   return (

@@ -20,6 +20,7 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
+  backgroundColor: '#F3F0EB',
   scheme,
   ios: {
     supportsTablet: true,
@@ -34,7 +35,7 @@ const config: ExpoConfig = {
     package: androidPackage,
     allowBackup: false,
     adaptiveIcon: {
-      backgroundColor: '#0B1220',
+      backgroundColor: '#F3F0EB',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
@@ -80,7 +81,7 @@ const config: ExpoConfig = {
         image: './assets/splash-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#0B1220',
+        backgroundColor: '#F3F0EB',
       },
     ],
     './plugins/withMinIosPodTarget.js',

@@ -1,7 +1,11 @@
+import { useEffect } from 'react';
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { AppProvider } from '../src/shell/AppContext';
 import { colors } from '../src/design-system/theme';
+
+void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 const theme = {
   ...DefaultTheme,
@@ -24,11 +28,20 @@ const sheet = {
 };
 
 export default function RootLayout() {
+  useEffect(() => {
+    void SplashScreen.hideAsync().catch(() => undefined);
+  }, []);
+
   return (
     <AppProvider>
       <ThemeProvider value={theme}>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerTintColor: colors.text }}>
+        <Stack
+          screenOptions={{
+            headerTintColor: colors.text,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ ...sheet, sheetAllowedDetents: [1] }} />
           <Stack.Screen name="sites" options={{ ...sheet, sheetAllowedDetents: [0.7, 1] }} />
