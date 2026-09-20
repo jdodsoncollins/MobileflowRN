@@ -12,6 +12,7 @@ const site = {
   shortName: 'test',
   lastPublished: null,
   customDomains: [],
+  locales: [],
   draftChangesCount: 0,
   pendingCMSItems: 0,
   seoIssuesCount: 0,

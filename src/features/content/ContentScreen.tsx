@@ -24,6 +24,7 @@ import { PageMetadataEditorSheet } from './PageMetadataEditorSheet';
 import { CMSItemEditorSheet } from './CMSItemEditorSheet';
 import { PhotoAssetUploadSheet } from './PhotoAssetUploadSheet';
 import { FormsInbox } from './FormsInbox';
+import { CommentsInbox } from './CommentsInbox';
 import { ConfirmationPolicy } from '../../domain/policies/confirmationPolicy';
 import { newActionPlan } from '../../domain/actions/mobileflowAction';
 import {
@@ -32,13 +33,14 @@ import {
 } from '../../domain/planning/cmsQuery';
 import type { CollectionID } from '../../domain/models/ids';
 
-type ContentSegment = 'pages' | 'cms' | 'assets' | 'forms';
+type ContentSegment = 'pages' | 'cms' | 'assets' | 'forms' | 'comments';
 
 const SEGMENTS: readonly { key: ContentSegment; label: string }[] = [
   { key: 'pages', label: 'Pages' },
   { key: 'cms', label: 'CMS' },
   { key: 'assets', label: 'Assets' },
   { key: 'forms', label: 'Forms' },
+  { key: 'comments', label: 'Comments' },
 ];
 
 const STATUS_FILTERS: readonly { key: CMSItemStatusFilter; label: string }[] = [
@@ -61,7 +63,9 @@ export function ContentScreen() {
     isExecuting,
     cmsItemHasMore,
     cmsItemTotal,
+    locales,
   } = useApp();
+  const [pageLocale, setPageLocale] = useState<string>('all');
   const [segment, setSegment] = useState<ContentSegment>('pages');
   const [editPage, setEditPage] = useState<WebflowPage | null>(null);
   const [editItem, setEditItem] = useState<WebflowCMSItem | null>(null);
@@ -75,7 +79,14 @@ export function ContentScreen() {
   } | null>(null);
 
   const connected = connectionIsConnected(connection);
-  const seoDebt = pages.filter(
+  const visiblePages = useMemo(() => {
+    if (pageLocale === 'all') return pages;
+    return pages.filter(
+      (page) => page.locale === pageLocale,
+    );
+  }, [pages, pageLocale]);
+
+  const seoDebt = visiblePages.filter(
     (p) => missingSEOTitle(p) || missingSEODescription(p),
   );
 
@@ -260,7 +271,7 @@ export function ContentScreen() {
                 accessibilityLabel={`Draft missing metadata for ${seoDebt.length} pages`}
               >
                 <Text style={styles.draftChipText}>
-                  ✦ Draft Missing Metadata ({seoDebt.length})
+                  Draft missing metadata ({seoDebt.length})
                 </Text>
               </Pressable>
             ) : null}
@@ -271,13 +282,62 @@ export function ContentScreen() {
             >
               <Text style={styles.publishChipText}>Publish site…</Text>
             </Pressable>
+            {locales.length > 1 ? (
+              <View style={styles.filterRow}>
+                <Pressable
+                  onPress={() => setPageLocale('all')}
+                  style={[
+                    styles.filterChip,
+                    pageLocale === 'all' && styles.filterChipActive,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: pageLocale === 'all' }}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      pageLocale === 'all' && styles.filterChipTextActive,
+                    ]}
+                  >
+                    All locales
+                  </Text>
+                </Pressable>
+                {locales
+                  .filter((locale) => locale.enabled)
+                  .map((locale) => (
+                    <Pressable
+                      key={locale.id}
+                      onPress={() => setPageLocale(locale.id)}
+                      style={[
+                        styles.filterChip,
+                        pageLocale === locale.id && styles.filterChipActive,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{
+                        selected: pageLocale === locale.id,
+                      }}
+                      accessibilityLabel={locale.displayName}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          pageLocale === locale.id &&
+                            styles.filterChipTextActive,
+                        ]}
+                      >
+                        {locale.tag}
+                      </Text>
+                    </Pressable>
+                  ))}
+              </View>
+            ) : null}
             <Text style={styles.sectionLabel}>Pages</Text>
-            <View style={[styles.card, pages.length > 0 && { minHeight: 240 }]}>
-              {pages.length === 0 ? (
+            <View style={[styles.card, visiblePages.length > 0 && { minHeight: 240 }]}>
+              {visiblePages.length === 0 ? (
                 <Text style={styles.emptyBody}>No pages loaded yet.</Text>
               ) : (
                 <FlashList
-                  data={pages}
+                  data={visiblePages}
                   keyExtractor={(page) => page.id}
                   renderItem={({ item: page, index: i }) => (
                     <Pressable
@@ -469,6 +529,8 @@ export function ContentScreen() {
           </>
         ) : segment === 'forms' ? (
           <FormsInbox />
+        ) : segment === 'comments' ? (
+          <CommentsInbox />
         ) : (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>Photo → Asset</Text>
@@ -537,7 +599,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segActive: { backgroundColor: colors.surface },
-  segText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
+  segText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   segTextActive: { color: colors.text, fontWeight: '600' },
   sectionLabel: {
     fontSize: 13,
@@ -550,6 +612,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: spacing.lg,
+    borderCurve: 'continuous',
   },
   pageRow: {
     flexDirection: 'row',
@@ -634,6 +697,7 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginBottom: spacing.sm,
   },

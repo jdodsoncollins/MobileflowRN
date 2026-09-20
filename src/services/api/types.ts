@@ -4,6 +4,7 @@ import type {
   PublishCMSItemsInput,
   PublishPageInput,
   PublishSiteInput,
+  ReplyToCommentInput,
   UpdateCMSItemInput,
   UpdatePageMetadataInput,
 } from '../../domain/actions/mobileflowAction';
@@ -17,8 +18,11 @@ import type {
   CMSItemPage,
   WebflowCMSItem,
   WebflowCollection,
+  WebflowCommentReply,
+  WebflowCommentThread,
   WebflowForm,
   WebflowFormSubmission,
+  WebflowLocale,
   WebflowPage,
   WebflowSite,
 } from '../../domain/models/webflowModels';
@@ -55,5 +59,12 @@ export interface WebflowAPIClient {
   listForms(siteID: SiteID): Promise<WebflowForm[]>;
   listFormSubmissions(formID: string): Promise<WebflowFormSubmission[]>;
   deleteFormSubmission(input: DeleteFormSubmissionInput): Promise<void>;
+  listSiteLocales(siteID: SiteID): Promise<WebflowLocale[]>;
+  listCommentThreads(siteID: SiteID): Promise<WebflowCommentThread[]>;
+  listCommentReplies(
+    siteID: SiteID,
+    threadID: string,
+  ): Promise<WebflowCommentReply[]>;
+  replyToComment(input: ReplyToCommentInput): Promise<void>;
   siteAgentInstructions(siteID: SiteID): Promise<string | null>;
 }

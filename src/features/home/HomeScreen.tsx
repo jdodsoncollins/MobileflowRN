@@ -28,7 +28,7 @@ import {
 } from '../../domain/models/webflowModels';
 import { AccessibilityIDs } from '../../support/accessibilityIDs';
 import { buildSiteHealthSnapshot } from '../../domain/planning/siteHealth';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export function HomeScreen() {
   const {
@@ -46,6 +46,11 @@ export function HomeScreen() {
     collections,
     cmsItems,
     assets,
+    locales,
+    comments,
+    analyze,
+    loadAnalyze,
+    loadComments,
     isBusy,
     isRehydrating,
     lastError,
@@ -54,6 +59,14 @@ export function HomeScreen() {
   const connected = connectionIsConnected(connection);
   const sites = connectionSites(connection);
   const connecting = connection.status === 'connecting' || isBusy;
+
+  useEffect(() => {
+    if (!selectedSiteID) return;
+    void loadAnalyze();
+    void loadComments();
+  }, [selectedSiteID, loadAnalyze, loadComments]);
+
+  const openComments = comments.filter((thread) => !thread.isResolved).length;
 
   const healthScore = useMemo(() => {
     if (!selectedSite) return null;
@@ -158,6 +171,57 @@ export function HomeScreen() {
               })}
             </ContentCard>
             </View>
+
+            {locales.length > 0 ? (
+              <>
+                <SectionLabel>Locales</SectionLabel>
+                <ContentCard>
+                  <Text style={styles.bodyMuted}>
+                    {locales
+                      .filter((locale) => locale.enabled)
+                      .map((locale) =>
+                        locale.isPrimary
+                          ? `${locale.tag} (primary)`
+                          : locale.tag,
+                      )
+                      .join(' · ') || 'Primary locale only'}
+                  </Text>
+                </ContentCard>
+              </>
+            ) : null}
+
+            <SectionLabel>Analyze</SectionLabel>
+            <ContentCard>
+              <Text style={styles.attentionTitle}>
+                {analyze.status === 'ready'
+                  ? analyze.sessions != null
+                    ? `${analyze.sessions.toLocaleString()} sessions`
+                    : 'Traffic'
+                  : 'Analyze'}
+              </Text>
+              <Text style={styles.bodyMuted}>{analyze.detail}</Text>
+              {analyze.topPages.map((page) => (
+                <Text key={page.path} style={styles.bodyMuted}>
+                  {page.path} · {page.count.toLocaleString()}
+                </Text>
+              ))}
+            </ContentCard>
+
+            <SectionLabel>Comments</SectionLabel>
+            <Pressable
+              onPress={() => setActiveTab('content')}
+              accessibilityRole="button"
+              accessibilityLabel="Open comments inbox"
+            >
+              <ContentCard>
+                <Text style={styles.attentionTitle}>
+                  {openComments} open
+                </Text>
+                <Text style={styles.bodyMuted}>
+                  Designer comment threads. Reply from Content → Comments.
+                </Text>
+              </ContentCard>
+            </Pressable>
 
             <SectionLabel>Site Health</SectionLabel>
             <Pressable

@@ -11,6 +11,9 @@ Configure OAuth with `.env` (see `.env.example` and the README bootstrap section
 | Batch SEO | Health findings → `BatchMetadataReviewSheet` |
 | CMS | Content → CMS → search, status filter, pagination, item publish |
 | Forms | Content → Forms → `FormsInbox` |
+| Comments | Content → Comments → `CommentsInbox` |
+| Locales | Home locale list; Content page filter; Site Health locale finding |
+| Analyze | Home Analyze card via MCP `data_analyze_tool` when the add-on is present |
 | Agent instructions | Settings → per-site device-local text |
 | Planner context | Command sheet + `buildBoundedPlannerContextJSON` |
 | Revert | Activity rows with `changes` → Revert |

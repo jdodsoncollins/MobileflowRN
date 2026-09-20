@@ -26,7 +26,7 @@ Material: *Tonal surfaces, active indicators, 48dp touch targets, primary FAB.*
 3. **Inline nav titles** (site switcher); not large titles  
 4. **Active indicator** on selected tab (M3) inside glass capsule (HIG)  
 5. **Content bottom inset** so lists clear floating chrome  
-6. **Brand primary** purple used sparingly for actions and selection  
+6. **Brand primary** teal-slate (`#1A5355`) used sparingly for actions and selection — not Webflow blue, not default AI purple  
 7. **Semantic chips** for risk/status stay in the content layer  
 8. **Appearance** stays light until a complete dark palette exists
 9. **Motion** respects the operating system's Reduce Motion setting
@@ -34,5 +34,5 @@ Material: *Tonal surfaces, active indicators, 48dp touch targets, primary FAB.*
 ## Platform notes
 
 - **iOS:** system NativeTabs; `UIGlassEffect` via `expo-glass-effect` on chrome; BlurView fallback. Inline nav titles (site switcher). Do not use large titles (RefreshControl loop).  
-- **Android:** Material-leaning surfaces `#F7F5FA` / `#FFFBFE`, slightly stronger elevation  
+- **Android:** Warm paper surfaces `#F4F1EC` / `#FFFBFE`, slightly stronger elevation  
 - **Web:** solid glass fallback (no BlurView)  

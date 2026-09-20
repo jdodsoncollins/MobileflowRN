@@ -113,6 +113,9 @@ export class LiveActionExecutor implements ActionExecutor {
       case 'deleteFormSubmission':
         await this.api.deleteFormSubmission(action.input);
         break;
+      case 'replyToComment':
+        await this.api.replyToComment(action.input);
+        break;
       case 'uploadAsset':
         throw WebflowAPIError.uploadFailed(
           `Use Photo → Asset flow to upload ${action.input.fileName}. Plan approval does not upload binary data.`,

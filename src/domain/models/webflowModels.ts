@@ -12,6 +12,16 @@ export interface WebflowWorkspace {
   name: string;
 }
 
+export interface WebflowLocale {
+  id: string;
+  cmsLocaleId: string | null;
+  tag: string;
+  displayName: string;
+  subdirectory: string;
+  isPrimary: boolean;
+  enabled: boolean;
+}
+
 export interface WebflowSite {
   id: SiteID;
   workspaceID: WorkspaceID;
@@ -19,6 +29,7 @@ export interface WebflowSite {
   shortName: string;
   lastPublished: string | null;
   customDomains: WebflowCustomDomain[];
+  locales: WebflowLocale[];
   draftChangesCount: number;
   pendingCMSItems: number;
   seoIssuesCount: number;
@@ -112,6 +123,36 @@ export interface WebflowFormSubmission {
   formID: string;
   submittedAt: string;
   data: Record<string, string>;
+}
+
+export interface WebflowCommentAuthor {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface WebflowCommentThread {
+  id: string;
+  siteID: SiteID;
+  pageID: PageID | null;
+  localeID: string | null;
+  content: string;
+  isResolved: boolean;
+  author: WebflowCommentAuthor;
+  createdOn: string;
+  lastUpdated: string;
+}
+
+export interface WebflowCommentReply {
+  id: string;
+  threadID: string;
+  content: string;
+  author: WebflowCommentAuthor;
+  createdOn: string;
+}
+
+export function commentPlainText(content: string): string {
+  return content.replace(/\[\[[^\]]+\]\]/g, '').replace(/\s+/g, ' ').trim();
 }
 
 export type WebflowConnection =

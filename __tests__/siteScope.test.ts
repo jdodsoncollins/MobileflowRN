@@ -10,6 +10,7 @@ function site(partial: Partial<WebflowSite> & { name: string }): WebflowSite {
     shortName: partial.shortName ?? partial.name.toLowerCase(),
     lastPublished: partial.lastPublished ?? null,
     customDomains: partial.customDomains ?? [],
+    locales: partial.locales ?? [],
     draftChangesCount: 0,
     pendingCMSItems: 0,
     seoIssuesCount: 0,

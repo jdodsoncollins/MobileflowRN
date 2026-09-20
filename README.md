@@ -8,9 +8,9 @@ Source is [MIT](LICENSE). The `private` flag in `package.json` only prevents acc
 
 | Area | What you get |
 |------|----------------|
-| **Home** | Selected site briefing, health score, SEO debt, and site-wide publish |
-| **Content** | Pages and SEO, CMS search/filter/pagination, item-level CMS publish, photo → asset upload, forms inbox |
-| **Site Health** | SEO, CMS, assets (alt text, large images), and publish-readiness findings with batch SEO review |
+| **Home** | Selected site briefing, locales, Analyze traffic (when the add-on is on), comments, health score, SEO debt, and site-wide publish |
+| **Content** | Pages (optional locale filter), CMS search/filter/pagination, item-level CMS publish, photo → asset upload, forms inbox, Designer comments |
+| **Site Health** | SEO, CMS, assets (alt text, large images), locales, and publish-readiness findings with batch SEO review |
 | **Command** | Keyword planner always available. Optional on-device model (Apple Intelligence / Gemini Nano) when the OS supports it |
 | **Activity** | Real API success and failure, publish rate limiting, revert where change records exist |
 | **Advanced** | Headless Designer MCP tools (variables, component props). A live Designer session is optional |
@@ -59,7 +59,7 @@ Edit `.env` before you run the app.
 ### 1. Create a Webflow app
 
 1. Open [Webflow Developers](https://developers.webflow.com) and create an app.
-2. Add the scopes listed in `src/services/auth/endpoints.ts` (`sites`, `pages`, `cms`, `assets`, `forms`, `components`, `authorized_user`, `branches`).
+2. Add the scopes listed in `src/services/auth/endpoints.ts` (`sites`, `pages`, `cms`, `assets`, `forms`, `comments`, `components`, `authorized_user`, `branches`). Existing sessions must reconnect after a scope change.
 3. Register a redirect URI. Either:
    - `mobileflow://oauth/callback`, or
    - an HTTPS page that 302s to `mobileflow://oauth/callback` (needed when the Webflow dashboard requires HTTPS).
@@ -187,6 +187,7 @@ __tests__/              # Vitest tests
 
 ## Documentation
 
+- [Design constraints](docs/design-constraints.md)
 - [Design system](docs/design-system.md)
 - [Live OAuth verification](docs/live-oauth-verify.md)
 - [On-device planner](docs/on-device-planner.md)

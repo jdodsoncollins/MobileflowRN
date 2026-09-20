@@ -80,6 +80,7 @@ export function buildSiteHealthSnapshot(args: {
   const findings: HealthFinding[] = [];
   const { site, pages, collections, cmsItems } = args;
   const assets = args.assets ?? [];
+  const locales = site.locales ?? [];
 
   // --- Page SEO ---
   const titles = new Map<string, PageID[]>();
@@ -351,6 +352,22 @@ export function buildSiteHealthSnapshot(args: {
       fixKind: 'none',
     });
   }
+  const secondary = locales.filter((locale) => !locale.isPrimary && locale.enabled);
+  if (secondary.length > 0) {
+    findings.push({
+      id: 'site-locales',
+      category: 'locale',
+      severity: 'info',
+      title: 'Localized site',
+      evidence: `${secondary.length} secondary locale${
+        secondary.length === 1 ? '' : 's'
+      }: ${secondary.map((locale) => locale.tag).join(', ')}.`,
+      suggestedFix:
+        'Review page SEO per locale in Content. Mobileflow does not create new localized CMS items.',
+      fixKind: 'none',
+    });
+  }
+
   if (collections.length === 0 && pages.length > 0) {
     findings.push({
       id: 'site-no-collections',

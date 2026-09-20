@@ -81,6 +81,19 @@ class RecordingAPI implements WebflowAPIClient {
   async deleteFormSubmission(): Promise<void> {
     this.deleteFormCalls += 1;
   }
+  async listSiteLocales() {
+    return [];
+  }
+  async listCommentThreads() {
+    return [];
+  }
+  async listCommentReplies() {
+    return [];
+  }
+  replyCalls = 0;
+  async replyToComment(): Promise<void> {
+    this.replyCalls += 1;
+  }
   async siteAgentInstructions(): Promise<string | null> {
     return null;
   }
@@ -297,6 +310,29 @@ describe('LiveActionExecutor', () => {
     expect(item.status).toBe('completed');
     expect(api.publishCMSCalls).toBe(1);
     expect(api.publishSiteCalls).toBe(0);
+  });
+
+  it('replies to comment threads', async () => {
+    const api = new RecordingAPI();
+    const executor = new LiveActionExecutor({
+      api,
+      mcp: new RecordingMCP(),
+      siteNameProvider: () => 'Test Site',
+    });
+    const descriptor = policy.descriptor(
+      {
+        type: 'replyToComment',
+        input: {
+          siteID: site,
+          threadID: 'thread_1',
+          content: 'Noted',
+        },
+      },
+      site,
+    );
+    const item = await executor.execute(descriptor);
+    expect(item.status).toBe('completed');
+    expect(api.replyCalls).toBe(1);
   });
 
   it('deletes form submissions', async () => {

@@ -11,6 +11,7 @@ const site: WebflowSite = {
   shortName: 'demo',
   workspaceID: workspaceID('ws_1'),
   customDomains: [],
+  locales: [],
   lastPublished: '2026-01-01T00:00:00.000Z',
   draftChangesCount: 0,
   pendingCMSItems: 0,

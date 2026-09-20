@@ -236,6 +236,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: Platform.OS === 'android' ? 0 : StyleSheet.hairlineWidth,
     borderColor: colors.border,
+    borderCurve: 'continuous',
   },
   sectionLabel: {
     ...typography.label,

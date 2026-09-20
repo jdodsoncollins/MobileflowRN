@@ -15,8 +15,11 @@ import type {
   WebflowCMSItem,
   WebflowCollection,
   WebflowConnection,
+  WebflowCommentReply,
+  WebflowCommentThread,
   WebflowForm,
   WebflowFormSubmission,
+  WebflowLocale,
   WebflowPage,
   WebflowSite,
 } from '../domain/models/webflowModels';
@@ -63,10 +66,15 @@ import {
 import {
   NullMCPClient,
   WebflowMCPClientImpl,
+  fetchAnalyzeSnapshot,
   fetchLiveDesignerContext,
   type MCPTool,
   type WebflowMCPClient,
 } from '../services/mcp';
+import {
+  emptyAnalyzeSnapshot,
+  type SiteAnalyzeSnapshot,
+} from '../domain/planning/siteAnalyze';
 import { connectionIsConnected } from '../domain/models/webflowModels';
 import { AccessibilityInfo, Platform } from 'react-native';
 import { detectPlannerCapability } from '../domain/planning/actionPlanner';
@@ -95,6 +103,10 @@ export interface AppState {
   assets: WebflowAsset[];
   forms: WebflowForm[];
   formSubmissions: WebflowFormSubmission[];
+  locales: WebflowLocale[];
+  comments: WebflowCommentThread[];
+  commentReplies: WebflowCommentReply[];
+  analyze: SiteAnalyzeSnapshot;
   mcpTools: import('../services/mcp').MCPTool[];
   recentActivity: ActivityItem[];
   liveSessionStatus: DesignerSessionStatus;
@@ -133,6 +145,10 @@ interface AppContextValue extends AppState {
   loadAssets: () => Promise<void>;
   loadForms: () => Promise<void>;
   loadFormSubmissions: (formID: string) => Promise<void>;
+  loadLocales: () => Promise<void>;
+  loadComments: () => Promise<void>;
+  loadCommentReplies: (threadID: string) => Promise<void>;
+  loadAnalyze: () => Promise<void>;
   refreshMCP: () => Promise<void>;
   selectSite: (siteID: SiteID | null) => void;
   appendActivity: (item: ActivityItem) => Promise<void>;
@@ -226,6 +242,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [forms, setForms] = useState<WebflowForm[]>([]);
   const [formSubmissions, setFormSubmissions] = useState<WebflowFormSubmission[]>(
     [],
+  );
+  const [locales, setLocales] = useState<WebflowLocale[]>([]);
+  const [comments, setComments] = useState<WebflowCommentThread[]>([]);
+  const [commentReplies, setCommentReplies] = useState<WebflowCommentReply[]>(
+    [],
+  );
+  const [analyze, setAnalyze] = useState<SiteAnalyzeSnapshot>(
+    emptyAnalyzeSnapshot('empty', 'Select a site to load Analyze.'),
   );
   const [mcpTools, setMcpTools] = useState<MCPTool[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
@@ -412,6 +436,82 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const loadLocales = useCallback(async () => {
+    const api = apiRef.current;
+    const siteID = selectedSiteIDRef.current;
+    if (!api || !siteID) {
+      setLocales([]);
+      return;
+    }
+    try {
+      const next = await api.listSiteLocales(siteID);
+      if (selectedSiteIDRef.current !== siteID) return;
+      setLocales(next);
+      setConnection((prev) => {
+        if (prev.status !== 'connected') return prev;
+        return {
+          status: 'connected',
+          sites: prev.sites.map((site) =>
+            site.id === siteID ? { ...site, locales: next } : site,
+          ),
+        };
+      });
+    } catch (e) {
+      if (selectedSiteIDRef.current === siteID) {
+        setLastError(e instanceof Error ? e.message : String(e));
+      }
+    }
+  }, []);
+
+  const loadComments = useCallback(async () => {
+    const api = apiRef.current;
+    const siteID = selectedSiteIDRef.current;
+    if (!api || !siteID) {
+      setComments([]);
+      return;
+    }
+    try {
+      const next = await api.listCommentThreads(siteID);
+      if (selectedSiteIDRef.current === siteID) setComments(next);
+    } catch (e) {
+      if (selectedSiteIDRef.current === siteID) {
+        setLastError(e instanceof Error ? e.message : String(e));
+        setComments([]);
+      }
+    }
+  }, []);
+
+  const loadCommentReplies = useCallback(async (threadID: string) => {
+    const api = apiRef.current;
+    const siteID = selectedSiteIDRef.current;
+    if (!api || !siteID) {
+      setCommentReplies([]);
+      return;
+    }
+    try {
+      const next = await api.listCommentReplies(siteID, threadID);
+      if (selectedSiteIDRef.current === siteID) setCommentReplies(next);
+    } catch (e) {
+      if (selectedSiteIDRef.current === siteID) {
+        setLastError(e instanceof Error ? e.message : String(e));
+        setCommentReplies([]);
+      }
+    }
+  }, []);
+
+  const loadAnalyze = useCallback(async () => {
+    const mcp = mcpRef.current;
+    const siteID = selectedSiteIDRef.current;
+    if (!mcp || !siteID) {
+      setAnalyze(
+        emptyAnalyzeSnapshot('empty', 'Select a site to load Analyze.'),
+      );
+      return;
+    }
+    const snapshot = await fetchAnalyzeSnapshot(mcp, mcpTools, siteID);
+    if (selectedSiteIDRef.current === siteID) setAnalyze(snapshot);
+  }, [mcpTools]);
+
   const loadFormSubmissions = useCallback(async (formID: string) => {
     const api = apiRef.current;
     if (!api) return;
@@ -550,6 +650,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAssets([]);
       setForms([]);
       setFormSubmissions([]);
+      setLocales([]);
+      setComments([]);
+      setCommentReplies([]);
+      setAnalyze(
+        emptyAnalyzeSnapshot('empty', 'Select a site to load Analyze.'),
+      );
       if (preferred) {
         await tokenStoreRef.current.save(
           TokenStoreKeys.selectedSiteID,
@@ -557,6 +663,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
         if (!isCurrent()) return;
         await loadSiteContent(preferred);
+        if (!isCurrent()) return;
+        await loadLocales();
       } else {
         setPages([]);
         setCollections([]);
@@ -569,7 +677,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       if (isCurrent()) setIsBusy(false);
     }
-  }, [loadSiteContent]);
+  }, [loadSiteContent, loadLocales]);
 
   const selectSite = useCallback(
     (siteID: SiteID | null) => {
@@ -590,16 +698,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAssets([]);
       setForms([]);
       setFormSubmissions([]);
+      setLocales([]);
+      setComments([]);
+      setCommentReplies([]);
+      setAnalyze(
+        emptyAnalyzeSnapshot('empty', 'Select a site to load Analyze.'),
+      );
       if (siteID) {
         void tokenStoreRef.current.save(TokenStoreKeys.selectedSiteID, siteID);
         void loadSiteContent(siteID).catch(() => undefined);
         void loadAgentInstructionsForSite(siteID);
+        void loadLocales();
       } else {
         void tokenStoreRef.current.delete(TokenStoreKeys.selectedSiteID);
         setAgentInstructions(null);
       }
     },
-    [loadSiteContent, loadAgentInstructionsForSite],
+    [loadSiteContent, loadAgentInstructionsForSite, loadLocales],
   );
 
   const connect = useCallback(async () => {
@@ -680,6 +795,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAssets([]);
         setForms([]);
         setFormSubmissions([]);
+        setLocales([]);
+        setComments([]);
+        setCommentReplies([]);
+        setAnalyze(
+          emptyAnalyzeSnapshot('empty', 'Select a site to load Analyze.'),
+        );
         setMcpTools([]);
         setLiveSessionStatus({ status: 'unavailable' });
         setDesignerContext(emptyDesignerContext());
@@ -906,6 +1027,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     assets,
     forms,
     formSubmissions,
+    locales,
+    comments,
+    commentReplies,
+    analyze,
     mcpTools,
     recentActivity,
     liveSessionStatus,
@@ -938,6 +1063,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadAssets,
     loadForms,
     loadFormSubmissions,
+    loadLocales,
+    loadComments,
+    loadCommentReplies,
+    loadAnalyze,
     refreshMCP,
     selectSite,
     appendActivity,

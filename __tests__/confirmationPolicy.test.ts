@@ -81,6 +81,19 @@ describe('ConfirmationPolicy', () => {
     );
   });
 
+  it('comment reply is a low-risk write', () => {
+    const action = {
+      type: 'replyToComment' as const,
+      input: {
+        siteID: site,
+        threadID: 'thread_1',
+        content: 'Thanks',
+      },
+    };
+    expect(policy.risk(action)).toBe('low');
+    expect(policy.requirement(action)).toBe('inline');
+  });
+
   it('form submission delete is destructive', () => {
     const action = {
       type: 'deleteFormSubmission' as const,

@@ -2,6 +2,7 @@ import type {
   CreateCMSItemInput,
   DeleteFormSubmissionInput,
   PublishCMSItemsInput,
+  ReplyToCommentInput,
   PublishPageInput,
   PublishSiteInput,
   UpdateCMSItemInput,
@@ -22,8 +23,11 @@ import type {
   CMSItemPage,
   WebflowCMSItem,
   WebflowCollection,
+  WebflowCommentReply,
+  WebflowCommentThread,
   WebflowForm,
   WebflowFormSubmission,
+  WebflowLocale,
   WebflowPage,
   WebflowSite,
 } from '../../domain/models/webflowModels';
@@ -35,6 +39,18 @@ import { CMS_PAGE_SIZE } from '../../domain/planning/cmsQuery';
 type TokenProvider = () => Promise<string | null>;
 type Pagination = { limit?: number; offset?: number; total?: number };
 type CustomDomain = { url?: string | null; id?: string | null };
+type RawLocale = {
+  id?: string | null;
+  cmsLocaleId?: string | null;
+  tag?: string | null;
+  displayName?: string | null;
+  subdirectory?: string | null;
+  enabled?: boolean | null;
+};
+type RawLocales = {
+  primary?: RawLocale | null;
+  secondary?: RawLocale[] | null;
+};
 
 const PAGE_LIMIT = 100;
 
@@ -78,6 +94,7 @@ export class WebflowAPIClientImpl implements WebflowAPIClient {
         shortName: string;
         lastPublished?: string | null;
         customDomains?: CustomDomain[];
+        locales?: RawLocales;
       }>('sites', 'sites', token);
 
     const domains: CustomDomain[][] = [];
@@ -108,6 +125,7 @@ export class WebflowAPIClientImpl implements WebflowAPIClient {
       customDomains: siteDomains
         .filter(isCompleteCustomDomain)
         .map((domain) => ({ id: domain.id, url: domain.url })),
+      locales: mapLocales(w.locales),
       draftChangesCount: 0,
       pendingCMSItems: 0,
       seoIssuesCount: 0,
@@ -493,6 +511,82 @@ export class WebflowAPIClientImpl implements WebflowAPIClient {
     });
   }
 
+  async listSiteLocales(sid: SiteID): Promise<WebflowLocale[]> {
+    const token = await this.requireToken();
+    const data = await this.requestJSON<{ locales?: RawLocales }>(
+      `sites/${sid}`,
+      { token },
+    );
+    return mapLocales(data.locales);
+  }
+
+  async listCommentThreads(sid: SiteID): Promise<WebflowCommentThread[]> {
+    const token = await this.requireToken();
+    const rows = await this.requestAllPages<{
+      id?: string;
+      siteId?: string | null;
+      pageId?: string | null;
+      localeId?: string | null;
+      content?: string | null;
+      isResolved?: boolean | null;
+      author?: { userId?: string; id?: string; name?: string; email?: string };
+      createdOn?: string | null;
+      lastUpdated?: string | null;
+    }>(`sites/${sid}/comments`, 'comments', token);
+    return rows
+      .filter((row) => isNonEmptyString(row.id))
+      .map((row) => ({
+        id: row.id!,
+        siteID: siteID(row.siteId ?? sid),
+        pageID: row.pageId ? pageID(row.pageId) : null,
+        localeID: row.localeId ?? null,
+        content: row.content ?? '',
+        isResolved: row.isResolved === true,
+        author: mapCommentAuthor(row.author),
+        createdOn: row.createdOn || new Date(0).toISOString(),
+        lastUpdated: row.lastUpdated || row.createdOn || new Date(0).toISOString(),
+      }));
+  }
+
+  async listCommentReplies(
+    sid: SiteID,
+    threadID: string,
+  ): Promise<WebflowCommentReply[]> {
+    const token = await this.requireToken();
+    const rows = await this.requestAllPages<{
+      id?: string;
+      commentId?: string | null;
+      content?: string | null;
+      author?: { userId?: string; id?: string; name?: string; email?: string };
+      createdOn?: string | null;
+    }>(`sites/${sid}/comments/${threadID}/replies`, 'comments', token);
+    return rows
+      .filter((row) => isNonEmptyString(row.id) || isNonEmptyString(row.commentId))
+      .map((row) => ({
+        id: row.commentId || row.id!,
+        threadID,
+        content: row.content ?? '',
+        author: mapCommentAuthor(row.author),
+        createdOn: row.createdOn || new Date(0).toISOString(),
+      }));
+  }
+
+  async replyToComment(input: ReplyToCommentInput): Promise<void> {
+    const token = await this.requireToken();
+    const content = input.content.trim();
+    if (!content) {
+      throw WebflowAPIError.invalidResponse('Reply cannot be empty');
+    }
+    await this.request(
+      `sites/${input.siteID}/comments/${input.threadID}/replies`,
+      {
+        token,
+        method: 'POST',
+        body: { content },
+      },
+    );
+  }
+
   async siteAgentInstructions(_siteID: SiteID): Promise<string | null> {
     return null;
   }
@@ -620,6 +714,44 @@ function isCompleteCustomDomain(
   domain: CustomDomain,
 ): domain is { id: string; url: string } {
   return isNonEmptyString(domain.id) && isNonEmptyString(domain.url);
+}
+
+function mapLocale(raw: RawLocale, isPrimary: boolean): WebflowLocale | null {
+  if (!isNonEmptyString(raw.id)) return null;
+  return {
+    id: raw.id,
+    cmsLocaleId: raw.cmsLocaleId ?? null,
+    tag: raw.tag?.trim() || raw.id.slice(0, 8),
+    displayName: raw.displayName?.trim() || raw.tag || 'Locale',
+    subdirectory: raw.subdirectory ?? '',
+    isPrimary,
+    enabled: raw.enabled !== false,
+  };
+}
+
+function mapLocales(raw: RawLocales | null | undefined): WebflowLocale[] {
+  if (!raw) return [];
+  const out: WebflowLocale[] = [];
+  const primary = raw.primary ? mapLocale(raw.primary, true) : null;
+  if (primary) out.push(primary);
+  for (const entry of raw.secondary ?? []) {
+    const locale = mapLocale(entry, false);
+    if (locale) out.push(locale);
+  }
+  return out;
+}
+
+function mapCommentAuthor(raw?: {
+  userId?: string;
+  id?: string;
+  name?: string;
+  email?: string;
+}): { id: string; name: string; email: string } {
+  return {
+    id: raw?.userId || raw?.id || '',
+    name: raw?.name?.trim() || 'Unknown',
+    email: raw?.email ?? '',
+  };
 }
 
 function mapCMSItem(raw: RawCMSItem, cid: CollectionID): WebflowCMSItem {

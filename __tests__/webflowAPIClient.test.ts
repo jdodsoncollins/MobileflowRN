@@ -284,4 +284,74 @@ describe('WebflowAPIClient contract', () => {
       true,
     );
   });
+
+  it('maps site locales without extra list N+1', async () => {
+    const fetchImpl = vi.fn(async () =>
+      json({
+        locales: {
+          primary: {
+            id: 'en',
+            tag: 'en',
+            displayName: 'English',
+            enabled: true,
+          },
+          secondary: [
+            {
+              id: 'fr',
+              tag: 'fr-FR',
+              displayName: 'French',
+              enabled: true,
+              subdirectory: 'fr',
+            },
+          ],
+        },
+      }),
+    );
+    const client = new WebflowAPIClientImpl({
+      tokenProvider: async () => 'token',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const locales = await client.listSiteLocales(siteID('site'));
+    expect(locales.map((locale) => locale.tag)).toEqual(['en', 'fr-FR']);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('lists comment threads and posts a reply', async () => {
+    const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/replies') && init?.method === 'POST') {
+        expect(JSON.parse(String(init.body))).toEqual({ content: 'Noted' });
+        return json({}, 201);
+      }
+      if (url.includes('/comments')) {
+        return json({
+          comments: [
+            {
+              id: 'c1',
+              siteId: 'site',
+              pageId: 'page',
+              content: 'Fix this [[user]]',
+              isResolved: false,
+              author: { name: 'Ada', email: 'ada@example.com' },
+              createdOn: '2026-01-01T00:00:00.000Z',
+              lastUpdated: '2026-01-01T00:00:00.000Z',
+            },
+          ],
+          pagination: { limit: 100, offset: 0, total: 1 },
+        });
+      }
+      return json({}, 404);
+    });
+    const client = new WebflowAPIClientImpl({
+      tokenProvider: async () => 'token',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const threads = await client.listCommentThreads(siteID('site'));
+    expect(threads[0]?.author.name).toBe('Ada');
+    await client.replyToComment({
+      siteID: siteID('site'),
+      threadID: 'c1',
+      content: 'Noted',
+    });
+  });
 });

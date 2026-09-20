@@ -30,6 +30,7 @@ export class ConfirmationPolicy {
         return 'medium';
       case 'deleteFormSubmission':
         return 'destructive';
+      case 'replyToComment':
       case 'uploadAsset':
         return 'low';
       case 'updateDesignerVariable':
@@ -98,6 +99,8 @@ export class ConfirmationPolicy {
         return 'Update CMS Item';
       case 'deleteFormSubmission':
         return 'Delete Form Submission';
+      case 'replyToComment':
+        return 'Reply to Comment';
       case 'uploadAsset':
         return 'Upload Asset';
       case 'updateDesignerVariable':
@@ -135,6 +138,8 @@ export class ConfirmationPolicy {
         } (does not republish the whole site)`;
       case 'deleteFormSubmission':
         return `Delete form submission ${action.input.submissionID}`;
+      case 'replyToComment':
+        return 'Post a reply on a Designer comment thread';
       case 'uploadAsset':
         return `Upload ${action.input.fileName}`;
       case 'updateDesignerVariable':

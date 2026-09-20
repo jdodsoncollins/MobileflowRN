@@ -25,6 +25,7 @@ function makeSite(overrides: Partial<WebflowSite> = {}): WebflowSite {
     shortName: 'demo',
     workspaceID: workspaceID('ws_1'),
     customDomains: [],
+    locales: [],
     lastPublished: '2026-01-01T00:00:00.000Z',
     draftChangesCount: 0,
     pendingCMSItems: 0,
@@ -172,6 +173,37 @@ describe('buildSiteHealthSnapshot', () => {
     expect(snap.findings.some((f) => f.id.startsWith('asset-large'))).toBe(
       true,
     );
+  });
+
+  it('notes enabled secondary locales', () => {
+    const snap = buildSiteHealthSnapshot({
+      site: makeSite({
+        locales: [
+          {
+            id: 'en',
+            cmsLocaleId: null,
+            tag: 'en',
+            displayName: 'English',
+            subdirectory: '',
+            isPrimary: true,
+            enabled: true,
+          },
+          {
+            id: 'fr',
+            cmsLocaleId: null,
+            tag: 'fr-FR',
+            displayName: 'French',
+            subdirectory: 'fr',
+            isPrimary: false,
+            enabled: true,
+          },
+        ],
+      }),
+      pages: [],
+      collections: [],
+      cmsItems: [],
+    });
+    expect(snap.findings.some((f) => f.id === 'site-locales')).toBe(true);
   });
 });
 

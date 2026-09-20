@@ -12,32 +12,37 @@ import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = Platform.OS === 'android';
 
-/** Semantic color system (light). Product purple = brand primary. */
+/**
+ * Semantic color system (light).
+ * Editorial ink + teal-slate accent — a publishing control plane, not
+ * Webflow Designer chrome (no #146EF5, no W mark) and not the default
+ * AI purple.
+ */
 export const colors = {
   // Canvas (content layer — not glass)
-  background: isIOS ? '#F2F2F7' : '#F7F5FA', // iOS systemGrouped / M3 surface
-  backgroundElevated: isIOS ? '#FFFFFF' : '#FFFBFE',
-  surface: '#FFFFFF',
-  surfaceMuted: isIOS ? '#E5E5EA' : '#E7E0EC',
-  surfaceVariant: isIOS ? '#F2F2F7' : '#E8DEF8',
-  surfaceContainer: isIOS ? '#FFFFFF' : '#F3EDF7',
+  background: isIOS ? '#F3F0EB' : '#F4F1EC',
+  backgroundElevated: isIOS ? '#FFFCF8' : '#FFFBFE',
+  surface: '#FFFCF8',
+  surfaceMuted: isIOS ? '#E7E2DA' : '#E4E0D8',
+  surfaceVariant: isIOS ? '#EFEBE4' : '#E8E4DC',
+  surfaceContainer: isIOS ? '#FFFCF8' : '#F3EFE8',
 
   // Ink
-  text: isIOS ? '#000000' : '#1C1B1F',
-  textSecondary: isIOS ? '#3C3C43' : '#49454F',
-  textTertiary: isIOS ? '#636366' : '#625D66',
+  text: '#1A1F24',
+  textSecondary: isIOS ? '#3D444C' : '#3F454C',
+  textTertiary: isIOS ? '#667078' : '#5F666E',
   textOnPrimary: '#FFFFFF',
   textOnAccent: '#FFFFFF',
 
-  // Brand / primary (Material primary + iOS accent-friendly)
-  accent: '#5B4CFF',
-  accentSoft: isIOS ? 'rgba(91, 76, 255, 0.12)' : '#E8DEF8',
-  accentContainer: '#E8E0FF',
-  onAccentContainer: '#1A0066',
+  // Brand / primary (teal-slate)
+  accent: '#1A5355',
+  accentSoft: isIOS ? 'rgba(26, 83, 85, 0.12)' : '#DCE8E8',
+  accentContainer: '#DCE8E8',
+  onAccentContainer: '#0B2A2B',
 
-  // FAB (M3 primary container / brand)
-  fab: '#5B4CFF',
-  fabPressed: '#4636E0',
+  // FAB
+  fab: '#1A5355',
+  fabPressed: '#164648',
   fabOn: '#FFFFFF',
 
   // Semantic
@@ -51,9 +56,9 @@ export const colors = {
   // Chrome
   border: isIOS ? 'rgba(60, 60, 67, 0.12)' : '#CAC4D0',
   separator: isIOS ? 'rgba(60, 60, 67, 0.18)' : '#CAC4D0',
-  tabInactive: isIOS ? '#636366' : '#3F3B43',
-  tabActive: '#5B4CFF',
-  pill: isIOS ? 'rgba(120, 120, 128, 0.12)' : '#E8DEF8',
+  tabInactive: isIOS ? '#667078' : '#5F666E',
+  tabActive: '#1A5355',
+  pill: isIOS ? 'rgba(26, 31, 36, 0.08)' : '#E4E0D8',
   pillActive: '#FFFFFF',
 
   // Liquid Glass simulation (navigation layer)

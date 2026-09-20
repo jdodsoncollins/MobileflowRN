@@ -11,6 +11,7 @@ export type MobileflowAction =
   | { type: 'publishCMSItems'; input: PublishCMSItemsInput }
   | { type: 'uploadAsset'; input: UploadAssetInput }
   | { type: 'deleteFormSubmission'; input: DeleteFormSubmissionInput }
+  | { type: 'replyToComment'; input: ReplyToCommentInput }
   | { type: 'updateDesignerVariable'; input: UpdateDesignerVariableInput }
   | { type: 'updateDesignerText'; input: UpdateDesignerTextInput }
   | { type: 'updateComponentProp'; input: UpdateComponentPropInput };
@@ -63,6 +64,12 @@ export interface PublishCMSItemsInput {
 export interface DeleteFormSubmissionInput {
   formID: string;
   submissionID: string;
+}
+
+export interface ReplyToCommentInput {
+  siteID: SiteID;
+  threadID: string;
+  content: string;
 }
 
 export interface UploadAssetInput {

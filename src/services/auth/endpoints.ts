@@ -21,6 +21,8 @@ export const WebflowScopes = {
     'assets:write',
     'forms:read',
     'forms:write',
+    'comments:read',
+    'comments:write',
     'authorized_user:read',
     'branches:read',
   ] as const,
