@@ -32,7 +32,7 @@ function isAppCallbackURL(url: string): boolean {
  */
 export function createExpoAuthSessionOpener(): AuthSessionOpener {
   return async ({ authorizeURL }) => {
-    const { Linking } = await import('react-native');
+    const Linking = await import('expo-linking');
     const WebBrowser = await import('expo-web-browser');
 
     WebBrowser.maybeCompleteAuthSession();

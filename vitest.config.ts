@@ -37,6 +37,7 @@ export default defineConfig({
         __dirname,
         '__tests__/mocks/expo-web-browser.ts',
       ),
+      'expo-linking': path.resolve(__dirname, '__tests__/mocks/expo-linking.ts'),
       'expo-crypto': path.resolve(__dirname, '__tests__/mocks/expo-crypto.ts'),
       expo: path.resolve(__dirname, '__tests__/mocks/expo.ts'),
       'expo-ai-kit': path.resolve(__dirname, '__tests__/mocks/expo-ai-kit.ts'),
